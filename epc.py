@@ -20,7 +20,8 @@ from scipy.io import savemat
 import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure    
+from matplotlib.figure import Figure
+import json    
 
 
 def do_export_file(dist, elev, s, t, f):
@@ -97,10 +98,57 @@ class Ui(QtWidgets.QMainWindow):
         self.comboBox_3.addItem('S')
         self.comboBox_4.addItem('E')
         self.comboBox_4.addItem('W')
-        self.show() # Show the GUI
+        self.read_param()
         self.pushButton.clicked.connect(self.get_profile)
         self.pushButton_2.clicked.connect(self.close)
-    
+        self.show() # Show the GUI
+        
+        
+    def read_param(self):
+        with open('conf_par.json') as json_conf : 
+            conf = json.load(json_conf)
+        self.spinBox.setValue(conf['station1']['lat']['g'])
+        self.spinBox_2.setValue(conf['station1']['lat']['m'])
+        self.doubleSpinBox.setValue(conf['station1']['lat']['s'])
+        self.comboBox.setCurrentIndex((conf['station1']['lat']['i']))
+        self.spinBox_3.setValue(conf['station1']['lon']['g'])
+        self.spinBox_4.setValue(conf['station1']['lon']['m'])
+        self.doubleSpinBox_2.setValue(conf['station1']['lon']['s'])
+        self.comboBox_2.setCurrentIndex((conf['station2']['lon']['i']))
+        self.spinBox_5.setValue(conf['station2']['lat']['g'])
+        self.spinBox_6.setValue(conf['station2']['lat']['m'])
+        self.doubleSpinBox_3.setValue(conf['station2']['lat']['s'])
+        self.comboBox_3.setCurrentIndex((conf['station2']['lat']['i']))
+        self.spinBox_7.setValue(conf['station2']['lon']['g'])
+        self.spinBox_8.setValue(conf['station2']['lon']['m'])
+        self.doubleSpinBox_4.setValue(conf['station2']['lon']['s'])
+        self.comboBox_4.setCurrentIndex((conf['station2']['lon']['i']))
+        
+        
+    def save_param(self):
+        with open('conf_par.json') as json_conf : 
+            conf = json.load(json_conf)
+        
+        conf['station1']['lat']['g'] = self.spinBox.value()
+        conf['station1']['lat']['m'] = self.spinBox_2.value()
+        conf['station1']['lat']['s'] = self.doubleSpinBox.value()
+        conf['station1']['lat']['i'] = self.comboBox.currentIndex()
+        conf['station1']['lon']['g'] = self.spinBox_3.value()
+        conf['station1']['lon']['m'] = self.spinBox_4.value()
+        conf['station1']['lon']['s'] = self.doubleSpinBox_2.value()
+        conf['station2']['lon']['i'] = self.comboBox_2.currentIndex()
+        conf['station2']['lat']['g'] = self.spinBox_5.value()
+        conf['station2']['lat']['m'] = self.spinBox_6.value()
+        conf['station2']['lat']['s'] = self.doubleSpinBox_3.value()
+        conf['station2']['lat']['i'] = self.comboBox_3.currentIndex()
+        conf['station2']['lon']['g'] = self.spinBox_7.value()
+        conf['station2']['lon']['m'] = self.spinBox_8.value()
+        conf['station2']['lon']['s'] = self.doubleSpinBox_4.value()
+        conf['station2']['lon']['i'] = self.comboBox_4.currentIndex()
+        conf_file = open("conf_par.json", "w")
+        json.dump(conf, conf_file)
+        conf_file.close()
+
     def back_main(self):
         uic.loadUi('epc_main.ui', self)
         self.pushButton.setText('GET')
@@ -118,11 +166,13 @@ class Ui(QtWidgets.QMainWindow):
         widget = QtWidgets.QWidget()
         widget.setLayout(self.Layout_main)
         self.setCentralWidget(widget)
+        self.read_param()
         QtWidgets.QApplication.restoreOverrideCursor()
         self.show()
         
       
     def get_profile(self):
+        self.save_param()
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         tx_lat = self.spinBox.value() + self.spinBox_2.value() / 60 + \
             self.doubleSpinBox.value()/3600
