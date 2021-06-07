@@ -189,26 +189,26 @@ class Ui(QtWidgets.QMainWindow):
         
         tx = (tx_lon, tx_lat)
         rx = (rx_lon, rx_lat)
+        print (rx)
+        print (tx)
         home_dir = getenv('HOME')
         projecao = utm.from_latlon(tx[1], tx[0])
         txU = (projecao[0], projecao[1])
         zone_number = projecao[2]
         zone_letter = projecao[3]
-        umsec = 1/3600
+        ummin = 1/60
         projecao = utm.from_latlon(rx[1], rx[0])
         rxU = (projecao[0], projecao[1])
-        box_lon_min = (rx[0] if rx[0] < tx[0] else tx[0])-umsec
-        box_lon_max = (rx[0] if rx[0] > tx[0] else tx[0])+umsec
-        box_lat_min = (rx[1] if rx[1] < tx[1] else tx[1])-umsec
-        box_lat_max = (rx[1] if rx[1] > tx[1] else tx[1])+umsec
+        box_lon_min = (rx[0] if rx[0] < tx[0] else tx[0])-ummin
+        box_lon_max = (rx[0] if rx[0] > tx[0] else tx[0])+ummin
+        box_lat_min = (rx[1] if rx[1] < tx[1] else tx[1])-ummin
+        box_lat_max = (rx[1] if rx[1] > tx[1] else tx[1])+ummin
         box = gpd.GeoSeries(Polygon([(box_lon_min, box_lat_min), (box_lon_max, box_lat_min), (box_lon_max, box_lat_max), (box_lon_min, box_lat_max)]))
         df1 = gpd.GeoDataFrame({'geometry': box, 'df1':[1]})
         bounds = df1.unary_union.bounds
         elevation.clip(bounds = bounds,output='terreno.tif',product='SRTM1')
         arquivo = copyfile(home_dir+'/.cache/elevation/SRTM1/terreno.tif', 'terreno.tif')
         raster = rasterio.open(arquivo)
-        band1 = raster.read(1)
-        raster = rasterio.open('terreno.tif')
         band1 = raster.read(1)
         distancia = ((txU[0]-rxU[0])**2+(txU[1]-rxU[1])**2)**0.5
         row , col = raster.index(rx[0], rx[1])
@@ -218,8 +218,9 @@ class Ui(QtWidgets.QMainWindow):
         
         qxs = []
         qys = []
-        
         delta_lat, delta_lon = deltas(txU, rxU, 1)
+        print(txU, rxU, delta_lat, delta_lon, len(perfil_distancia))
+        print(zone_number, zone_letter)
         for n in range(1, len(perfil_distancia) + 1):
             qx = txU[0] + delta_lat * n 
             qy = txU[1] + delta_lon * n
